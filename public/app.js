@@ -269,6 +269,15 @@ function downloadReportExcel() {
       'Total Almuerzos': row.total_comidas
     }));
 
+    // Calcular el total general de almuerzos
+    const totalComidas = data.reduce((sum, row) => sum + row.total_comidas, 0);
+
+    // Agregar fila de Total General
+    datosExcel.push({
+      'Empleado': 'Total General',
+      'Total Almuerzos': totalComidas
+    });
+
     // 2. Crear la hoja de cálculo y el libro de trabajo
     const worksheet = XLSX.utils.json_to_sheet(datosExcel);
     const workbook = XLSX.utils.book_new();
@@ -292,7 +301,6 @@ function downloadReportExcel() {
 
 // Descargar el reporte actual en formato PDF usando html2pdf.js
 function downloadReportPDF() {
-  const element = DOM.resultadoReporteContainer;
   const desde = DOM.reporteDesde.value;
   const hasta = DOM.reporteHasta.value;
 
@@ -303,16 +311,39 @@ function downloadReportPDF() {
 
   showToast('Generando PDF...', 'success');
 
+  // Clonar el contenedor para aplicar estilos CSS fijos y universales
+  // Esto evita problemas de renderizado en el canvas de html2pdf con variables CSS y fuentes CORS
+  const element = DOM.resultadoReporteContainer.cloneNode(true);
+  element.style.backgroundColor = '#FFFFFF';
+  element.style.color = '#3D405B';
+  element.style.fontFamily = 'Arial, sans-serif';
+  element.style.padding = '24px';
+  element.style.borderRadius = '0px';
+  element.style.boxShadow = 'none';
+  element.style.border = 'none';
+
+  // Aplicar colores de texto explícitos a todos los elementos del clon
+  element.querySelectorAll('td, th, h3, span, strong').forEach(el => {
+    el.style.color = '#3D405B';
+  });
+
+  // Estilo específico para las cabeceras de tabla
+  element.querySelectorAll('th').forEach(th => {
+    th.style.backgroundColor = '#F4D3C9'; // Fondo terracota pastel claro
+    th.style.color = '#E07A5F';           // Texto terracota
+  });
+
   // Configuración de html2pdf
   const opt = {
-    margin:       15,
+    margin:       12,
     filename:     `Reporte_Comidas_${desde}_a_${hasta}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
   try {
+    // Generar el PDF a partir del elemento clonado
     html2pdf().set(opt).from(element).save();
   } catch (error) {
     console.error('Error al exportar a PDF:', error);
