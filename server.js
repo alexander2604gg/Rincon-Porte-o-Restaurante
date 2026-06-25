@@ -6,10 +6,21 @@ const { createClient } = require('@libsql/client');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Validación de variables de entorno de Turso
+const dbUrl = (process.env.TURSO_DATABASE_URL || '').trim();
+const dbToken = (process.env.TURSO_AUTH_TOKEN || '').trim();
+
+if (!dbUrl) {
+  console.error('⚠️ [DIAGNÓSTICO] La variable de entorno TURSO_DATABASE_URL está vacía o no definida en Render.');
+}
+if (!dbToken) {
+  console.error('⚠️ [DIAGNÓSTICO] La variable de entorno TURSO_AUTH_TOKEN está vacía o no definida en Render.');
+}
+
 // Configuración de la base de datos Turso
 const db = createClient({
-  url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN
+  url: dbUrl,
+  authToken: dbToken
 });
 
 // Inicialización de la base de datos Turso
