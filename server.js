@@ -6,9 +6,22 @@ const { createClient } = require('@libsql/client');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Función para sanitizar variables de entorno en producción (elimina espacios y comillas accidentales)
+const cleanEnvVar = (val) => {
+  if (!val) return '';
+  let cleaned = val.trim();
+  if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
+    cleaned = cleaned.slice(1, -1);
+  }
+  if (cleaned.startsWith("'") && cleaned.endsWith("'")) {
+    cleaned = cleaned.slice(1, -1);
+  }
+  return cleaned.trim();
+};
+
 // Validación de variables de entorno de Turso
-const dbUrl = (process.env.TURSO_DATABASE_URL || '').trim();
-const dbToken = (process.env.TURSO_AUTH_TOKEN || '').trim();
+const dbUrl = cleanEnvVar(process.env.TURSO_DATABASE_URL);
+const dbToken = cleanEnvVar(process.env.TURSO_AUTH_TOKEN);
 
 if (!dbUrl) {
   console.error('⚠️ [DIAGNÓSTICO] La variable de entorno TURSO_DATABASE_URL está vacía o no definida en Render.');
