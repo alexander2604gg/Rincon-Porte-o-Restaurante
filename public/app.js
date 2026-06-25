@@ -237,8 +237,8 @@ async function loadReport() {
     state.ultimoReporteData = data; // Guardar en el estado para exportar
     renderReport(data, desde, hasta);
     
-    // Auto descargar reporte en formato Excel (CSV)
-    downloadReportExcel();
+    // Auto descargar reporte en formato PDF por defecto
+    downloadReportPDF();
   } catch (error) {
     console.error(error);
     showToast('Error al consultar el reporte', 'error');
@@ -265,7 +265,7 @@ function downloadReportExcel() {
   try {
     // 1. Mapear datos JSON para renombrar encabezados y quitar IDs
     const datosExcel = data.map(row => ({
-      'Empleado': row.nombre,
+      'Colaborador': row.nombre,
       'Total Almuerzos': row.total_comidas
     }));
 
@@ -274,7 +274,7 @@ function downloadReportExcel() {
 
     // Agregar fila de Total General
     datosExcel.push({
-      'Empleado': 'Total General',
+      'Colaborador': 'Total General',
       'Total Almuerzos': totalComidas
     });
 
@@ -284,9 +284,9 @@ function downloadReportExcel() {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Almuerzos');
 
     // Ajustar anchos de columnas para mejor visualización
-    const maxLenNombre = Math.max(...datosExcel.map(row => row['Empleado'].length), 10);
+    const maxLenNombre = Math.max(...datosExcel.map(row => row['Colaborador'].length), 10);
     worksheet['!cols'] = [
-      { wch: maxLenNombre + 2 }, // Columna Empleado
+      { wch: maxLenNombre + 2 }, // Columna Colaborador
       { wch: 18 }                // Columna Total Almuerzos
     ];
 
@@ -328,6 +328,8 @@ function downloadReportPDF() {
   // 3. Forzar estilos de impresión en el clon y anular animaciones/transiciones que causan opacidad 0
   element.style.display = 'block';
   element.style.width = '100%';
+  element.style.margin = '0';
+  element.style.marginTop = '0';
   element.style.backgroundColor = '#FFFFFF';
   element.style.color = '#000000';
   element.style.fontFamily = 'Arial, sans-serif';
@@ -373,7 +375,7 @@ function downloadReportPDF() {
     margin:       12,
     filename:     `Reporte_Comidas_${desde}_a_${hasta}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    html2canvas:  { scale: 2, useCORS: true, logging: false, scrollY: 0, scrollX: 0 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
 
