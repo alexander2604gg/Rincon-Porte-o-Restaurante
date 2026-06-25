@@ -20,7 +20,7 @@ async function initDb() {
       CREATE TABLE IF NOT EXISTS empleados (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL UNIQUE
-      );
+      )
     `);
     console.log('Tabla "empleados" verificada/creada exitosamente en Turso.');
   } catch (error) {
@@ -38,7 +38,7 @@ async function initDb() {
         comio INTEGER NOT NULL CHECK (comio IN (0, 1)),
         FOREIGN KEY(empleado_id) REFERENCES empleados(id) ON DELETE CASCADE,
         UNIQUE(empleado_id, fecha)
-      );
+      )
     `);
     console.log('Tabla "asistencia" verificada/creada exitosamente en Turso.');
     console.log('Conexión con Turso exitosa y base de datos lista.');
