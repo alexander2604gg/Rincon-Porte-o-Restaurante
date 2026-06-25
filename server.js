@@ -23,6 +23,13 @@ const cleanEnvVar = (val) => {
 const dbUrl = cleanEnvVar(process.env.TURSO_DATABASE_URL);
 const dbToken = cleanEnvVar(process.env.TURSO_AUTH_TOKEN);
 
+console.log("--- DEBUG DE ENTORNO ---");
+console.log("URL de Turso:", process.env.TURSO_DATABASE_URL);
+console.log("Token existe?:", !!process.env.TURSO_AUTH_TOKEN);
+console.log("Longitud del Token:", process.env.TURSO_AUTH_TOKEN ? process.env.TURSO_AUTH_TOKEN.length : 0);
+console.log("¿Token termina con espacio?:", process.env.TURSO_AUTH_TOKEN ? process.env.TURSO_AUTH_TOKEN.endsWith(' ') : false);
+console.log("------------------------");
+
 if (!dbUrl) {
   console.error('⚠️ [DIAGNÓSTICO] La variable de entorno TURSO_DATABASE_URL está vacía o no definida en Render.');
 }
@@ -42,7 +49,7 @@ async function initDb() {
   try {
     await db.execute(`
       CREATE TABLE IF NOT EXISTS empleados (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         nombre TEXT NOT NULL UNIQUE
       )
     `);
@@ -56,7 +63,7 @@ async function initDb() {
   try {
     await db.execute(`
       CREATE TABLE IF NOT EXISTS asistencia (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        id INTEGER PRIMARY KEY,
         empleado_id INTEGER NOT NULL,
         fecha TEXT NOT NULL,
         comio INTEGER NOT NULL CHECK (comio IN (0, 1)),
