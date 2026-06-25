@@ -14,16 +14,22 @@ const db = createClient({
 
 // Inicialización de la base de datos Turso
 async function initDb() {
+  // 1. Intentar crear la tabla de empleados
   try {
-    // Crear tabla empleados si no existe
     await db.execute(`
       CREATE TABLE IF NOT EXISTS empleados (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre TEXT NOT NULL UNIQUE
-      )
+      );
     `);
+    console.log('Tabla "empleados" verificada/creada exitosamente en Turso.');
+  } catch (error) {
+    console.error('Error crítico al inicializar la tabla "empleados" en Turso:', error);
+    process.exit(1);
+  }
 
-    // Crear tabla asistencia si no existe
+  // 2. Intentar crear la tabla de asistencia
+  try {
     await db.execute(`
       CREATE TABLE IF NOT EXISTS asistencia (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -32,12 +38,12 @@ async function initDb() {
         comio INTEGER NOT NULL CHECK (comio IN (0, 1)),
         FOREIGN KEY(empleado_id) REFERENCES empleados(id) ON DELETE CASCADE,
         UNIQUE(empleado_id, fecha)
-      )
+      );
     `);
-
+    console.log('Tabla "asistencia" verificada/creada exitosamente en Turso.');
     console.log('Conexión con Turso exitosa y base de datos lista.');
   } catch (error) {
-    console.error('Error crítico al inicializar base de datos en Turso:', error);
+    console.error('Error crítico al inicializar la tabla "asistencia" en Turso:', error);
     process.exit(1);
   }
 }
