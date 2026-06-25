@@ -250,7 +250,7 @@ async function loadReport() {
   }
 }
 
-// Descargar el reporte actual en formato CSV optimizado para Excel
+// Descargar el reporte actual en formato Excel real (.xlsx) usando SheetJS
 function downloadReportExcel() {
   const data = state.ultimoReporteData;
   const desde = DOM.reporteDesde.value;
@@ -261,33 +261,30 @@ function downloadReportExcel() {
     return;
   }
 
-  // BOM de UTF-8 para que Excel abra el archivo correctamente
-  let csvContent = "\uFEFF";
-  csvContent += "Reporte de Asistencia de Comidas - Rincón Porteño\n";
-  csvContent += `Rango de fechas:;${desde} al ${hasta}\n\n`;
-  csvContent += "Empleado;Total de Comidas\n";
-
-  let totalComidas = 0;
-  data.forEach(row => {
-    csvContent += `"${row.nombre}";${row.total_comidas}\n`;
-    totalComidas += row.total_comidas;
-  });
-
-  csvContent += `\nTotal General:;${totalComidas}\n`;
-
   try {
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `Reporte_Comidas_${desde}_a_${hasta}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    showToast('Archivo Excel descargado', 'success');
+    // 1. Mapear datos JSON para renombrar encabezados y quitar IDs
+    const datosExcel = data.map(row => ({
+      'Empleado': row.nombre,
+      'Total Almuerzos': row.total_comidas
+    }));
+
+    // 2. Crear la hoja de cálculo y el libro de trabajo
+    const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Almuerzos');
+
+    // Ajustar anchos de columnas para mejor visualización
+    const maxLenNombre = Math.max(...datosExcel.map(row => row['Empleado'].length), 10);
+    worksheet['!cols'] = [
+      { wch: maxLenNombre + 2 }, // Columna Empleado
+      { wch: 18 }                // Columna Total Almuerzos
+    ];
+
+    // 3. Forzar descarga del archivo .xlsx
+    XLSX.writeFile(workbook, `Reporte_Comidas_${desde}_a_${hasta}.xlsx`);
+    showToast('Archivo Excel descargado (.xlsx)', 'success');
   } catch (error) {
-    console.error(error);
+    console.error('Error al exportar a Excel:', error);
     showToast('Error al descargar el archivo', 'error');
   }
 }
