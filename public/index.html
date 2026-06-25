@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Rincón Porteño | Control de Asistencia</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Sistema ligero y rápido de control de asistencia de almuerzos para los empleados de Rincón Porteño.">
+  <meta name="theme-color" content="#E07A5F">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast Notification System -->
+  <div id="toast-notificacion" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <span id="toast-mensaje"></span>
+  </div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <h1 class="brand-title">Rincón Porteño</h1>
+      <p class="brand-subtitle">Control de Almuerzos</p>
+    </div>
+  </header>
+
+  <!-- Main Content Areas -->
+  <main class="app-content">
+    
+    <!-- VISTA 1: ASISTENCIA DIARIA -->
+    <section id="view-asistencia" class="view-section active">
+      <!-- Selector de Fecha y Resumen -->
+      <div class="card date-selector-card">
+        <div class="date-navigator">
+          <button id="btn-fecha-anterior" class="btn-nav" aria-label="Día anterior">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <input type="date" id="fecha-asistencia" class="large-date-input" aria-label="Seleccionar fecha">
+          <button id="btn-fecha-siguiente" class="btn-nav" aria-label="Día siguiente">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+        
+        <div class="summary-status">
+          <span class="summary-label">Resumen de hoy:</span>
+          <span id="resumen-asistencia" class="summary-badge">0 / 0 comieron</span>
+        </div>
+      </div>
+
+      <!-- Buscador rápido (Opcional, muy útil para móvil) -->
+      <div class="search-container">
+        <input type="text" id="buscar-empleado" class="large-search-input" placeholder="Buscar empleado..." aria-label="Buscar empleado en la lista">
+      </div>
+
+      <!-- Lista de Empleados -->
+      <div id="lista-empleados" class="employee-list">
+        <!-- Generado dinámicamente por JavaScript -->
+        <div class="loading-spinner-container">
+          <div class="spinner"></div>
+          <p>Cargando lista de asistencia...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 2: REPORTES SEMANALES -->
+    <section id="view-reportes" class="view-section">
+      <div class="card report-config-card">
+        <h2 class="section-title">Generar Reporte</h2>
+        <p class="section-description">Selecciona el rango de fechas para ver el total de comidas consumidas.</p>
+        
+        <div class="date-range-inputs">
+          <div class="input-group">
+            <label for="reporte-desde">Desde:</label>
+            <input type="date" id="reporte-desde" class="large-date-input">
+          </div>
+          <div class="input-group">
+            <label for="reporte-hasta">Hasta:</label>
+            <input type="date" id="reporte-hasta" class="large-date-input">
+          </div>
+        </div>
+
+        <button id="btn-consultar-reporte" class="btn-primary btn-block">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Consultar Almuerzos
+        </button>
+      </div>
+
+      <!-- Resultados del Reporte -->
+      <div id="resultado-reporte-container" class="card report-results-card hidden">
+        <div class="report-header">
+          <h3 id="reporte-rango-texto" class="report-subtitle">Reporte del 25/06 al 30/06</h3>
+          <div class="report-actions">
+            <button id="btn-descargar-excel" class="btn-secondary-outline btn-small">
+              Descargar Excel
+            </button>
+            <button id="btn-imprimir-reporte" class="btn-secondary-outline btn-small">
+              Imprimir
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Empleado</th>
+                <th class="text-center">Comidas</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-reporte-cuerpo">
+              <!-- Creado dinámicamente por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="report-summary-footer">
+          <span>Total comidas en el período:</span>
+          <strong id="total-comidas-reporte">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- VISTA 3: CONFIGURACIÓN DE EMPLEADOS -->
+    <section id="view-empleados" class="view-section">
+      <div class="card employee-config-card">
+        <h2 class="section-title">Configuración de Empleados</h2>
+        <p class="section-description" style="margin-bottom: 12px;">Administra el personal activo del restaurante. Puedes añadir nuevos miembros a la lista.</p>
+        <button id="btn-abrir-modal" class="btn-primary btn-block">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          Agregar Empleado
+        </button>
+      </div>
+
+      <!-- Lista de Empleados Registrados -->
+      <div class="card list-employees-card">
+        <h3 class="report-subtitle" style="margin-bottom: 12px;">Lista de Empleados</h3>
+        <div id="lista-config-empleados" class="employee-list">
+          <!-- Cargado dinámicamente -->
+        </div>
+      </div>
+      
+      <!-- Modal HTML5 Nativo para Registro -->
+      <dialog id="modal-empleado" class="dialog-modal">
+        <form id="form-empleado" method="dialog" class="modal-form">
+          <h3 class="modal-title">Nuevo Empleado</h3>
+          <p class="modal-desc">Ingresa el nombre completo del empleado para registrarlo en el sistema.</p>
+          
+          <div class="input-group">
+            <label for="input-nombre-empleado">Nombre y Apellido:</label>
+            <input type="text" id="input-nombre-empleado" required placeholder="Ej: Santiago Rodríguez" class="large-search-input" style="box-shadow: none; border-color: var(--border-color); width: 100%;">
+          </div>
+          
+          <div class="modal-buttons" style="display: flex; gap: 10px; margin-top: 18px; width: 100%;">
+            <button type="button" id="btn-cerrar-modal" class="btn-secondary-outline btn-block" style="height: 48px; border-radius: 12px; margin: 0;">Cancelar</button>
+            <button type="submit" class="btn-primary btn-block" style="height: 48px; border-radius: 12px; margin: 0; box-shadow: none;">Guardar</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+
+  </main>
+
+  <!-- Navigation Bottom Bar (Mobile Ergonomics) -->
+  <nav class="bottom-nav">
+    <button id="tab-asistencia" class="nav-item active" aria-controls="view-asistencia" aria-selected="true">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+      <span class="nav-label">Asistencia</span>
+    </button>
+    <button id="tab-reportes" class="nav-item" aria-controls="view-reportes" aria-selected="false">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+      <span class="nav-label">Reportes</span>
+    </button>
+    <button id="tab-empleados" class="nav-item" aria-controls="view-empleados" aria-selected="false">
+      <svg class="nav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      <span class="nav-label">Empleados</span>
+    </button>
+  </nav>
+
+  <script src="app.js"></script>
+</body>
+</html>
