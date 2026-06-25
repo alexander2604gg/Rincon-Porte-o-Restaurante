@@ -311,14 +311,23 @@ function downloadReportPDF() {
 
   showToast('Generando PDF...', 'success');
 
-  // 1. Clonar el contenedor
+  // 1. Crear un contenedor wrapper invisible temporal en el DOM para evitar parpadeos visuales
+  const wrapper = document.createElement('div');
+  wrapper.style.position = 'fixed';
+  wrapper.style.left = '0';
+  wrapper.style.top = '0';
+  wrapper.style.width = '800px'; // Ancho de renderizado consistente y de alta definición
+  wrapper.style.height = '0';
+  wrapper.style.overflow = 'hidden';
+  wrapper.style.zIndex = '-9999';
+  document.body.appendChild(wrapper);
+
+  // 2. Clonar el contenedor del reporte
   const element = DOM.resultadoReporteContainer.cloneNode(true);
 
-  // 2. Adjuntarlo temporalmente al DOM fuera de pantalla para que el navegador calcule los estilos
-  element.style.position = 'fixed';
-  element.style.left = '-9999px';
-  element.style.top = '0';
-  element.style.width = '650px'; // Forzar ancho de renderizado consistente
+  // 3. Forzar estilos de impresión en el clon y anular animaciones/transiciones que causan opacidad 0
+  element.style.display = 'block';
+  element.style.width = '100%';
   element.style.backgroundColor = '#FFFFFF';
   element.style.color = '#000000';
   element.style.fontFamily = 'Arial, sans-serif';
@@ -326,11 +335,18 @@ function downloadReportPDF() {
   element.style.borderRadius = '0px';
   element.style.boxShadow = 'none';
   element.style.border = 'none';
+  element.style.animation = 'none';
+  element.style.transition = 'none';
+  element.style.transform = 'none';
+  element.style.opacity = '1';
 
-  // 3. Forzar alto contraste absoluto (negro puro y opacidad completa) en todos los elementos hijos
+  // 4. Asegurar alto contraste y desactivar animaciones/transiciones en todos los descendientes
   element.querySelectorAll('*').forEach(el => {
-    el.style.color = '#000000';
+    el.style.animation = 'none';
+    el.style.transition = 'none';
+    el.style.transform = 'none';
     el.style.opacity = '1';
+    el.style.color = '#000000';
     el.style.textShadow = 'none';
     el.style.boxShadow = 'none';
     el.style.backgroundColor = 'transparent';
@@ -349,9 +365,10 @@ function downloadReportPDF() {
     td.style.borderBottom = '1px solid #E0E0E0';
   });
 
-  document.body.appendChild(element);
+  // Meter el clon dentro del wrapper
+  wrapper.appendChild(element);
 
-  // 4. Configuración de html2pdf
+  // 5. Configuración de html2pdf
   const opt = {
     margin:       12,
     filename:     `Reporte_Comidas_${desde}_a_${hasta}.pdf`,
@@ -361,21 +378,21 @@ function downloadReportPDF() {
   };
 
   try {
-    // Generar el PDF y remover el clon una vez guardado
+    // Generar el PDF y remover el wrapper del DOM una vez guardado
     html2pdf().set(opt).from(element).save().then(() => {
-      if (document.body.contains(element)) {
-        document.body.removeChild(element);
+      if (document.body.contains(wrapper)) {
+        document.body.removeChild(wrapper);
       }
     }).catch(err => {
       console.error('Error al guardar PDF:', err);
-      if (document.body.contains(element)) {
-        document.body.removeChild(element);
+      if (document.body.contains(wrapper)) {
+        document.body.removeChild(wrapper);
       }
     });
   } catch (error) {
     console.error('Error al exportar a PDF:', error);
-    if (document.body.contains(element)) {
-      document.body.removeChild(element);
+    if (document.body.contains(wrapper)) {
+      document.body.removeChild(wrapper);
     }
     showToast('Error al descargar el archivo', 'error');
   }
