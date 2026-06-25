@@ -311,29 +311,47 @@ function downloadReportPDF() {
 
   showToast('Generando PDF...', 'success');
 
-  // Clonar el contenedor para aplicar estilos CSS fijos y universales
-  // Esto evita problemas de renderizado en el canvas de html2pdf con variables CSS y fuentes CORS
+  // 1. Clonar el contenedor
   const element = DOM.resultadoReporteContainer.cloneNode(true);
+
+  // 2. Adjuntarlo temporalmente al DOM fuera de pantalla para que el navegador calcule los estilos
+  element.style.position = 'fixed';
+  element.style.left = '-9999px';
+  element.style.top = '0';
+  element.style.width = '650px'; // Forzar ancho de renderizado consistente
   element.style.backgroundColor = '#FFFFFF';
-  element.style.color = '#3D405B';
+  element.style.color = '#000000';
   element.style.fontFamily = 'Arial, sans-serif';
-  element.style.padding = '24px';
+  element.style.padding = '30px';
   element.style.borderRadius = '0px';
   element.style.boxShadow = 'none';
   element.style.border = 'none';
 
-  // Aplicar colores de texto explícitos a todos los elementos del clon
-  element.querySelectorAll('td, th, h3, span, strong').forEach(el => {
-    el.style.color = '#3D405B';
+  // 3. Forzar alto contraste absoluto (negro puro y opacidad completa) en todos los elementos hijos
+  element.querySelectorAll('*').forEach(el => {
+    el.style.color = '#000000';
+    el.style.opacity = '1';
+    el.style.textShadow = 'none';
+    el.style.boxShadow = 'none';
+    el.style.backgroundColor = 'transparent';
   });
 
-  // Estilo específico para las cabeceras de tabla
+  // Estilo contrastante para las cabeceras de tabla
   element.querySelectorAll('th').forEach(th => {
-    th.style.backgroundColor = '#F4D3C9'; // Fondo terracota pastel claro
-    th.style.color = '#E07A5F';           // Texto terracota
+    th.style.backgroundColor = '#F0F0F0';
+    th.style.color = '#000000';
+    th.style.fontWeight = 'bold';
+    th.style.borderBottom = '2px solid #000000';
   });
 
-  // Configuración de html2pdf
+  // Estilo de bordes de las celdas
+  element.querySelectorAll('td').forEach(td => {
+    td.style.borderBottom = '1px solid #E0E0E0';
+  });
+
+  document.body.appendChild(element);
+
+  // 4. Configuración de html2pdf
   const opt = {
     margin:       12,
     filename:     `Reporte_Comidas_${desde}_a_${hasta}.pdf`,
@@ -343,10 +361,22 @@ function downloadReportPDF() {
   };
 
   try {
-    // Generar el PDF a partir del elemento clonado
-    html2pdf().set(opt).from(element).save();
+    // Generar el PDF y remover el clon una vez guardado
+    html2pdf().set(opt).from(element).save().then(() => {
+      if (document.body.contains(element)) {
+        document.body.removeChild(element);
+      }
+    }).catch(err => {
+      console.error('Error al guardar PDF:', err);
+      if (document.body.contains(element)) {
+        document.body.removeChild(element);
+      }
+    });
   } catch (error) {
     console.error('Error al exportar a PDF:', error);
+    if (document.body.contains(element)) {
+      document.body.removeChild(element);
+    }
     showToast('Error al descargar el archivo', 'error');
   }
 }

@@ -626,7 +626,8 @@ input:checked + .slider:before {
 /* Estilos de Impresión / Compartir simplificado */
 @media print {
   body {
-    background: white;
+    background: #ffffff !important;
+    color: #000000 !important;
     padding-bottom: 0;
   }
   .bottom-nav, .app-header, .report-config-card, .report-actions {
@@ -638,6 +639,29 @@ input:checked + .slider:before {
   .card {
     border: none;
     box-shadow: none;
+    background: #ffffff !important;
+    padding: 0;
+    margin: 0;
+  }
+  /* Forzar alto contraste en la tabla del reporte en impresión */
+  .report-table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  .report-table th {
+    background-color: #f0f0f0 !important;
+    color: #000000 !important;
+    font-weight: bold;
+    border-bottom: 2px solid #000000;
+  }
+  .report-table td {
+    color: #000000 !important;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  .report-summary-footer, .report-summary-footer strong, .report-subtitle {
+    color: #000000 !important;
+    opacity: 1 !important;
+    text-shadow: none !important;
   }
 }
 
