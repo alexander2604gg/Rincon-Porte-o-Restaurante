@@ -92,9 +92,12 @@
       <div id="resultado-reporte-container" class="card report-results-card hidden">
         <div class="report-header">
           <h3 id="reporte-rango-texto" class="report-subtitle">Reporte del 25/06 al 30/06</h3>
-          <div class="report-actions">
+          <div class="report-actions" data-html2canvas-ignore="true">
             <button id="btn-descargar-excel" class="btn-secondary-outline btn-small">
-              Descargar Excel
+              Excel
+            </button>
+            <button id="btn-descargar-pdf" class="btn-secondary-outline btn-small">
+              PDF
             </button>
             <button id="btn-imprimir-reporte" class="btn-secondary-outline btn-small">
               Imprimir
@@ -181,6 +184,8 @@
 
   <!-- SheetJS para exportación a Excel (.xlsx) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <!-- html2pdf.js para exportación a PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

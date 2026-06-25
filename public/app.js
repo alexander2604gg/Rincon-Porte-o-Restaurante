@@ -32,6 +32,7 @@ const DOM = {
   totalComidasReporte: document.getElementById('total-comidas-reporte'),
   btnImprimirReporte: document.getElementById('btn-imprimir-reporte'),
   btnDescargarExcel: document.getElementById('btn-descargar-excel'),
+  btnDescargarPDF: document.getElementById('btn-descargar-pdf'),
   
   // Configuración de Empleados
   tabEmpleados: document.getElementById('tab-empleados'),
@@ -289,6 +290,36 @@ function downloadReportExcel() {
   }
 }
 
+// Descargar el reporte actual en formato PDF usando html2pdf.js
+function downloadReportPDF() {
+  const element = DOM.resultadoReporteContainer;
+  const desde = DOM.reporteDesde.value;
+  const hasta = DOM.reporteHasta.value;
+
+  if (!state.ultimoReporteData || state.ultimoReporteData.length === 0) {
+    showToast('No hay datos para exportar', 'error');
+    return;
+  }
+
+  showToast('Generando PDF...', 'success');
+
+  // Configuración de html2pdf
+  const opt = {
+    margin:       15,
+    filename:     `Reporte_Comidas_${desde}_a_${hasta}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  try {
+    html2pdf().set(opt).from(element).save();
+  } catch (error) {
+    console.error('Error al exportar a PDF:', error);
+    showToast('Error al descargar el archivo', 'error');
+  }
+}
+
 // --- RENDERIZADO DINÁMICO ---
 
 function renderLoading() {
@@ -485,8 +516,11 @@ function setupReportActions() {
   // Consultar Reporte
   DOM.btnConsultarReporte.addEventListener('click', loadReport);
 
-  // Descargar Excel (CSV)
+  // Descargar Excel (.xlsx)
   DOM.btnDescargarExcel.addEventListener('click', downloadReportExcel);
+
+  // Descargar PDF (.pdf)
+  DOM.btnDescargarPDF.addEventListener('click', downloadReportPDF);
 
   // Imprimir Reporte
   DOM.btnImprimirReporte.addEventListener('click', () => {
